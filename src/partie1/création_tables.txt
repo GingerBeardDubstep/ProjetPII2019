@@ -1,0 +1,97 @@
+//Depuis Oracle :
+
+CREATE TABLE AIRPORTS(
+    airport_id NUMBER(5),
+    name VARCHAR2(66),
+    latitude NUMBER(38,20),
+    longitude NUMBER(38,20),
+    IATA VARCHAR2(3),
+    ICAO VARCHAR2(4),
+    type VARCHAR2(7),
+    dataSource VARCHAR2(11) 
+);
+
+CREATE TABLE AIRLINES(
+    airline_id NUMBER(5),
+    name VARCHAR2(81),
+    alias VARCHAR2(33),
+    IATA VARCHAR2(4),
+    ICAO VARCHAR2(6),
+    Callsign VARCHAR2(50),
+    Country VARCHAR2(37),
+    active VARCHAR2(1)
+);
+
+CREATE TABLE LOCALISATION(
+    latitude NUMBER(38,20),
+    longitude NUMBER(38,20),
+    ville VARCHAR2(33),
+    pays VARCHAR2(32),
+    altitude NUMBER(5), 
+    decalage_horaire NUMBER(5),
+    DST VARCHAR2(1),
+    TzData VARCHAR2(30)    
+);
+
+CREATE TABLE ROUTES(
+    airline VARCHAR2(3),
+    airlineID NUMBER(5),
+    airport_dep VARCHAR2(3),
+    airport_depID NUMBER(5),
+    airport_dest VARCHAR2(3),
+    airport_destID NUMBER(5),
+    codeshare VARCHAR2(1),
+    arrets NUMBER(1),
+    routeID NUMBER(5)
+);
+
+CREATE TABLE flight_number(
+    flightid NUMBER(6),
+    airline_code VARCHAR2(5),
+    flightnumber VARCHAR(3),
+    stops NUMBER(2)
+);
+
+CREATE TABLE planes(
+    nom VARCHAR2(46),
+    IATA VARCHAR2(3),
+    ICAO VARCHAR2(7),
+    NB_DE_SIEGES NUMBER(3), 
+    VITESSE_DE_CROISIERE NUMBER(4),
+    AUTONOMIE NUMBER(6),
+    CARBURANT NUMBER(6)  
+);
+
+CREATE TABLE EQUIPEMENT(
+    airline VARCHAR2(3),
+    airport_dep VARCHAR2(3),
+    airport_dest VARCHAR2(3),
+    code VARCHAR2(3),
+    routeid NUMBER(5),
+    equid NUMBER(5)
+);
+
+CREATE TABLE STOPS(
+    stopid NUMBER(6),
+    idflight NUMBER(6),
+    AIRPORT_DEP VARCHAR2(4),
+    AIRPORT_DEST VARCHAR2(4),
+    FLIGHTNUMBER VARCHAR2(5),
+    STOPORDER NUMBER(2)
+);
+
+
+
+//Pour l'importation des données, on passe par SQL*LOADER.
+//On commence par télécharger le basic package (instantclient-basic-windows.x64-18.5.0.0.0dbru.zip) ainsi que le tools package (instantclient-tools-windows.x64-18.5.0.0.0dbru.zip)
+//On extrait les deux fichiers .zip dans un meme dossier.
+//Il faut ensuite ajouter sqlldr.exe au PATH pour pouvoir l'executer depuis un terminal.
+//Depuis un terminal, on lance successivement les commandes : 
+*    sqlldr grp10/TPOracle@oracle.telecomnancy.univ-lorraine.fr:1521/TNCY control='../../src/partie1/fichiers_de_controles/load_localisations.ctl'
+*    sqlldr grp10/TPOracle@oracle.telecomnancy.univ-lorraine.fr:1521/TNCY control='../../src/partie1/fichiers_de_controles/load_airports.ctl'
+*    sqlldr grp10/TPOracle@oracle.telecomnancy.univ-lorraine.fr:1521/TNCY control='../../src/partie1/fichiers_de_controles/load_airlines.ctl'
+*    sqlldr grp10/TPOracle@oracle.telecomnancy.univ-lorraine.fr:1521/TNCY control='../../src/partie1/fichiers_de_controles/load_planes.ctl'
+*    sqlldr grp10/TPOracle@oracle.telecomnancy.univ-lorraine.fr:1521/TNCY control='../../src/partie1/fichiers_de_controles/load_routes.ctl'
+*    sqlldr grp10/TPOracle@oracle.telecomnancy.univ-lorraine.fr:1521/TNCY control='../../src/partie1/fichiers_de_controles/load_equipements.ctl'
+*    sqlldr grp10/TPOracle@oracle.telecomnancy.univ-lorraine.fr:1521/TNCY control='../../src/partie1/fichiers_de_controles/load_flightnumbers.ctl'
+*    sqlldr grp10/TPOracle@oracle.telecomnancy.univ-lorraine.fr:1521/TNCY control='../../src/partie1/fichiers_de_controles/stops.ctl'

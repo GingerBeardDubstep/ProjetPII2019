@@ -1,0 +1,125 @@
+ Structure des tables :
+
+ On nous donne 5 tables différentes :
+ 	-Les aéroports (airports)
+ 	-Les compagnies aériennes (airlines)
+ 	-Les vols (routes)
+ 	-Les avions (planes)
+ 	-Les numéros de vol (flightnumbers)
+
+
+ A noter :
+
+ 	-Pour la création des tables/l'insertion des tuples, il va falloir commencer par airports et airlines, puis finir par routes et planes.
+
+ 	-Lorsque l'on passe en 3NF : il y a 10 tables :
+ 		*airports
+ 		*airlines
+ 		*routes
+ 		*planes
+ 		*flightnumbers
+ 		*flightnumber_route
+ 		*localisation
+ 		*equipement
+ 		*airline_ID
+ 		*airport_ID
+
+ 	-On peut se poser la question de la cohérence de mettre en 2NF la table routes (airlineID dépend de airline, airportDepID dépend de airportDep et airportDestID dépend de airportDest) car celà provoquerait des redondances dans les informations (déjà contenues dans airlines et airports).
+
+ 	-Aprés dénormalisation : il reste 8 tables :
+ 		*airports
+ 		*airlines
+ 		*routes
+ 		*planes
+ 		*flightnumbers
+ 		*flightnumber_route
+ 		*localisations
+ 		*equipements
+
+
+airports(extended) : // Il n'y a pas Type dans la version normale (non-extended) 
+					 // car toutes les données y concernent uniquement les 
+					 // aéroports.
+
+	AirportID NUMBER(5) PRIMARY KEY, 
+	Nom varchar2(35) NOT NULL,
+	Ville varchar2(35) NOT NULL,
+	Pays varchar2(25) NOT NULL,
+	IATA varchar2(3) DEFAULT NULL,  // Identification spéciale
+	ICAO varchar2(4) DEFAULT NULL,  // Identification spéciale
+	Latitude NUMBER(6) NOT NULL,
+	Longitude NUMBER(6) NOT NULL,
+	Altitude NUMBER(6) NOT NULL,
+	DecalageHoraire NUMBER(3) NOT NULL,
+	DST varchar2(1) NOT NULL,
+	TzDatabaseTimeZone varchar2(25),
+	Type varchar2(10) NOT NULL,
+	DataSource varchar2(30),
+
+	CONSTRAINT dst_check CHECK((DST LIKE("E")) OR (DST LIKE("A")) OR (DST LIKE("S")) OR (DST LIKE("O")) OR (DST LIKE("Z")) OR (DST LIKE("N")) OR (DST LIKE("U"))),
+	// E pour europe, A pour USA/Canada, S pour Amérique du sud, O pour australie, Z // pour Nouvelle Zélande, N pour aucun et U pour inconnu
+
+	CONSTRAINT type_check CHECK((Type LIKE("airport")) OR (Type LIKE("station")) OR (Type LIKE("port")) OR (Type LIKE("unknown"))),
+
+
+airlines :
+	AirlineID NUMBER(5) PRIMARY KEY,
+	Nom varchar2(50) NOT NULL,
+	Alias varchar2(10) DEFAULT NULL,
+	IATA varchar2(2) DEFAULT NULL, // Identification spéciale
+	ICAO varchar2(3) DEFAULT NULL, // Identification spéciale
+	Logo varchar2(30) DEFAULT NULL,
+	PaysOrigine varchar2(25) NOT NULL,
+	Active varchar2(1) DEFAULT NULL,
+
+	CONSTRAINT activite_check CHECK((Active LIKE("Y")) OR (Active LIKE("N")) OR (Active=NULL)), 
+	// Y si cette compagnie fonctionne toujours, N sinon, \N ou NULL si pas d'infos
+
+
+routes :
+	Airline varchar2(3) NOT NULL, 
+	//Code IATA ou ICAO
+
+	AirlineID NUMBER(5) DEFAULT NULL, 
+	//Permet de relier routes et airlines
+
+	AirportDep varchar2(4) NOT NULL,
+	//Code IATA ou ICAO
+
+	AirportDepID NUMBER(5) DEFAULT NULL,
+	//Permet de relier routes et airports
+
+	AirportDest varchar2(4) NOT NULL, 
+	//Code IATA ou ICAO
+
+	AirportDestID NUMBER(5) DEFAULT NULL,
+	//Permet de relier routes et airports
+	
+	Codeshare varchar2(1) DEFAULT NULL,
+	Arrets NUMBER(2) NOT NULL,
+	Equipement varchar2(12) NOT NULL ,
+	//Type d'avions utilisés généralement pour ce vol (en code IATA)
+
+	CONSTRAINT fk_al FOREIGN KEY(AirlineID) REFERENCES airlines(AirlineID),
+	CONSTRAINT fk_apdep FOREIGN KEY(AirportDepID) REFERENCES airlines(AirportID),
+	CONSTRAINT fk_apdest FOREIGN KEY(AirportDestID) REFERENCES airlines(AirportID),
+
+	CONSTRAINT code_check CHECK((Codeshare LIKE("Y")) OR (Codeshare=NULL)),
+	CONSTRAINT route_pk PRIMARY KEY(Airline,AirportDep,AirportDest),
+
+planes :
+	Nom varchar2(45) PRIMARY KEY,
+	IATA varchar2(3) UNIQUE, //Permet de joindre planes et routes
+	ICAO varchar2(4) UNIQUE, 
+	Capacite NUMBER(5),
+	Vitesse_Croisiere NUMBER(5)
+	Autonomie NUMBER(10)
+	Carburant NUMBER(10)
+
+	//ces rajouts sont NULL si non spécifiés
+	//En cas de plusiers valeur, la moyenne a été prise
+
+flightnumbers :
+	AirlineCode VARCHAR2(3), //Code IATA ou ICAO de airline
+	FlightNumber VARCHAR2(10) PRIMARY KEY,
+	Route VARCHAR2(9),
